@@ -1,18 +1,30 @@
-
 #include <stdio.h>
 #include "functions.h"
 #include <time.h>
 #include <stdlib.h>
-void get_input(){
-		unsigned int input= malloc(sizeof(short)); 
-		printf("Please input hexadecimal: ");
-		scanf("%04x",&input);
-		printf("%04x",input);
 
-
+void get_input(unsigned char *physicalAdd){
+		unsigned int input;
+		while(1){
+				printf("Please input hexadecimal: ");
+				scanf("%04x", &input);
+				//getting offset
+				unsigned int offset_mask = 0x00FF;
+				unsigned int offset = input & offset_mask;
+				//getting vpn
+				unsigned int vpn = input >> OFFSET_BITS;
+				//physical frame number, getting address from page table
+				unsigned int pfn = physicalAdd[vpn];
+				//shows the content
+				unsigned int address = pfn << OFFSET_BITS;
+				address |= offset;
+		 		printf("address: %x\n", address);
+		 		unsigned char content = physicalAdd[address];
+		 		printf("content: %c\n", content);
+		}
 }
-int initialize(){
-    unsigned char *physicalAdd = malloc(sizeof(char)*MAIN_MEMORY);
+
+void *initialize(unsigned char *physicalAdd){
     srand(time(NULL));
     //number of data needed to fill
     int  number = (rand() % (MAX_BYTES - MIN_BYTES)) + MIN_BYTES; 
@@ -45,6 +57,7 @@ int initialize(){
         if(i>=data_frame_number*PAGE_SIZE && i<data_frame_number*PAGE_SIZE + number){
             fprintf(outputMemory, "0x%04x\t\t\t%d\t\t\t\t%c\n", i, frame_number, content);
             physicalAdd[i] = content;
+
             if(frame_number != f){
 							physicalAdd[entry_index] = frame_number-1;
 							physicalAdd[entry_index + PAGE_SIZE] = 0x01;
@@ -57,13 +70,14 @@ int initialize(){
         }
         a++;
     }
-    for(int i=entry_index; i<256;i++){
+    for(int i = entry_index; i < 256; i++){
+			physicalAdd[entry_index]=' ';
 			fprintf(outputPageTable, "0x%02x\t\t\t\t\t\tFALSE\n", entry_index);
 			physicalAdd[entry_index + PAGE_SIZE] = 0x00;
 			entry_index++;
     }
 
     fclose(outputMemory);
+		return physicalAdd;
 
-    return 0;
 }
