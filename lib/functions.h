@@ -14,6 +14,8 @@
 //} bool;
 
 void *initialize(unsigned char *physicalAdd);
-void get_input(unsigned char *physicalAdd);
+void get_input(unsigned char *physicalAdd, unsigned char *diskMemory);
+void assignDiskMemory(unsigned char *diskMemory, unsigned char *physicalAdd);
+void swap(unsigned char *physicalAdd, unsigned char *diskMemory, unsigned char pfn, unsigned char vpn);
 
 #endif
