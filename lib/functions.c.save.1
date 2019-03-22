@@ -63,6 +63,7 @@ void *initialize(unsigned char *physicalAdd){
 		int f=data_frame_number;
 		//index of page table
 		int entry_index = 0;
+
 		for(int i = 0; i < MAIN_MEMORY; ++i){
 		   //when address reaches 256, frame number +1
         if(a==PAGE_SIZE){
@@ -70,14 +71,15 @@ void *initialize(unsigned char *physicalAdd){
             //initialize address to 0
             a=0;
         }
+
         char content = (rand() % (216 - 33)) + 33;
         if(i >= data_frame_number*PAGE_SIZE && i < data_frame_number*PAGE_SIZE + number){
-  					//fprintf(outputMemory, "0x%04x\t\t\t%d\t\t\t\t%c\n", i, frame_number, content);
+            //fprintf(outputMemory, "0x%04x\t\t\t%d\t\t\t\t%c\n", i, frame_number, content);
             physicalAdd[i] = content;
             if(frame_number != f){
 							physicalAdd[entry_index] = frame_number-1;
 							physicalAdd[entry_index + PAGE_SIZE] = 1;
-							f = frame_number;
+							f=frame_number;
 							fprintf(outputPageTable, "0x%02x\t\t0x%02x\t\tTRUE\n", entry_index, physicalAdd[entry_index]);
 							entry_index++;
             }
@@ -88,30 +90,24 @@ void *initialize(unsigned char *physicalAdd){
         a++;
     }
 
-		//Output page table file
-		for(int i=entry_index; i<256;i++){
+		//Output Page Table File
+		for(int i = entry_index; i < 256; i++){
 			physicalAdd[i] = ' ';
 			physicalAdd[i + PAGE_SIZE] = 0;
 			fprintf(outputPageTable, "0x%02x\t\t\t\t\t\tFALSE\n",i);
 		}
 
-		//Assign page table into physcial_memory.txt
-		frame_number=0;
-		a=0; 
 		for(int i = 0; i < MAIN_MEMORY; ++i){
-       //when address reaches 256, frame number +1
-       if(a==PAGE_SIZE){
-           frame_number++;
-           //initialize address to 0
-           a=0;
-        }
-			if(i < 512){
-				fprintf(outputMemory, "0x%04x\t\t\t%d\t\t\t\t0x%04x\n", i, frame_number, physicalAdd[i]);
-			}else{
-				fprintf(outputMemory, "0x%04x\t\t\t%d\t\t\t\t%c\n", i, frame_number, physicalAdd[i]);
-			}
-		a++;
-    }
+			//when address reaches 256, frame number +1
+		  if(a==PAGE_SIZE){
+		   		frame_number++;
+		    	//initialize address to 0
+		     	a=0;
+				}
+			
+		}
+		fprintf(outputMemory, "0x%04x\t\t\t%d\t\t\t\t%c\n", i, frame_number, content);
+		fprintf(outputMemory, "0x%02x\t\t\t%d\n", i, frame_number);
 
     fclose(outputMemory);
     fclose(outputPageTable);
@@ -131,9 +127,8 @@ void assignDiskMemory(unsigned char *diskMemory, unsigned char *physicalAdd){
 	}
 
 	int  assigned=0;
-	for(int x = 0; x < 256 && assigned == 0; x++){
+	for(int x = 0; x<256 && assigned ==0; x++){
 		if(physicalAdd[x]== ' '){
-			printf("\nPage number that mapped to the disk: %x\n", x);
 			physicalAdd[x]=0x00;
 			physicalAdd[x+1]=0x01;
 			physicalAdd[x+PAGE_SIZE]=0;
@@ -147,7 +142,9 @@ void assignDiskMemory(unsigned char *diskMemory, unsigned char *physicalAdd){
 
 //Swapping
 void swap(unsigned char *physicalAdd, unsigned char *diskMemory, unsigned char pfn, unsigned char vpn){
-	unsigned int available_memory=512;
+	unsigned int available_memory = 512;
+
+	//finding available frame
 	for(int i = 512; i < MAIN_MEMORY ; i++){
 		if(physicalAdd[i] == ' '){
 			available_memory = i;
@@ -158,13 +155,13 @@ void swap(unsigned char *physicalAdd, unsigned char *diskMemory, unsigned char p
 	}
 
 	int x = pfn * 256 ;
-	for(int i=available_memory; i< available_memory+256;i++){
+	for(int i = available_memory; i < available_memory + 256; i++){
 		physicalAdd[i] = diskMemory[x];
 		x++;
 	}
 	physicalAdd[vpn] = (int)available_memory/256;
 	physicalAdd[vpn + 256] = 0x01;
-
+	
 	printf("\n\n--------------------------------------------------------------------------------------\n");
 	printf("\nPerform Swapping...........");
 	printf("\n\n--------------------------------------------------------------------------------------\n");

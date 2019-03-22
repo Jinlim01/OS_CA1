@@ -1,13 +1,18 @@
+CC = gcc
+CFLAGS = -c -Wall
+LIBDIR = lib
+DIST = dist
+
 default: link
 
-link: dist/main.o dist/functions.o
-				gcc dist/main.o dist/functions.o -o dist/main
+link: $(DIST)/main.o $(DIST)/functions.o
+				$(CC) $(DIST)/main.o $(DIST)/functions.o -o $(DIST)/stimulate
 
 dist/main.o: main.c
-				gcc -c -Wall main.c -o dist/main.o
+				$(CC) $(CFLAGS) main.c -o $(DIST)/main.o
 
-dist/functions.o: lib/functions.c
-				gcc -c -Wall lib/functions.c -o dist/functions.o
+dist/functions.o: $(LIBDIR)/functions.c
+				$(CC) $(CFLAGS) $(LIBDIR)/functions.c -o $(DIST)/functions.o
 
 clean:
-				rm -rf ./dist && mkdir dist
+				rm -rf ./$(DIST) && mkdir $(DIST)
